@@ -1,0 +1,245 @@
+<html>
+	<head>
+		<title>app</title>
+
+		<!-- Standard Meta -->
+		<meta charset="utf-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+		<!-- <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"> -->
+
+		<!-- Cordova requirements -->
+		<!-- <meta http-equiv="Content-Security-Policy" content="default-src 'unsafe-inline' data: gap: https://ssl.gstatic.com 'unsafe-eval'; style-src 'unsafe-inline'; media-src *; img-src 'unsafe-inline' data: content:;"> -->
+		<meta name="format-detection" content="telephone=no">
+		<meta name="msapplication-tap-highlight" content="no">
+		<meta name="viewport" content="initial-scale=1, width=device-width, viewport-fit=cover">
+		<!-- <script type="text/javascript" src="cordova.js"></script> -->
+
+		<!-- vue requirements -->
+		<script src="https://unpkg.com/vue/dist/vue.js"></script>
+		<script src="https://unpkg.com/vue-router/dist/vue-router.js"></script>
+
+		<!-- the axios http request library.  this is then called with axios.get/post/put/delete -->	
+		<!-- <script src="https://unpkg.com/axios/dist/axios.min.js"></script> -->
+
+		<!-- headers -->
+		
+
+
+<!-- ==================== -->
+<!-- fomantic.html -->
+<!-- ==================== -->
+<!-- fomantic requirements -->
+<script src="https://unpkg.com/jquery@3.3.1/dist/jquery.js"></script>
+<link rel="stylesheet" type="text/css" href="https://unpkg.com/fomantic-ui@2.8.6/dist/semantic.min.css">
+<script src="https://unpkg.com/fomantic-ui@2.8.6/dist/semantic.min.js"></script>
+
+
+<!-- ==================== -->
+<!-- style.html -->
+<!-- ==================== -->
+<style>
+	/* put your stylesheets in here... */
+        body {
+		/* margin: 0px; */
+	}
+</style>
+
+
+	</head>
+	<body>
+
+		<div id="app">
+			<router-view></router-view>
+			<!-- this is where any global popups need to go. -->
+		</div>
+
+		<script>
+
+			// create an empty bus vue, to control popups and such.
+			const bus = new Vue();
+
+			// create a data store object.
+			const data = {
+			};
+
+			// create a runtime object.
+			// we do this so that each vue component can safely monitor this for changes, rather than the keys within
+			// as apparently if the keys within change their type, the component won't register the change or trigger an update.
+			const runtime = {};
+		</script>
+
+		<!-- models -->
+		
+
+
+<!-- ==================== -->
+<!-- exampleModel.html -->
+<!-- ==================== -->
+<script>
+
+	data.example = {};
+
+	function exampleModel_load() {
+
+		if ( typeof localStorage.example !== 'undefined' ) {
+			data.example = JSON.parse(localStorage.example);
+			return true;
+		}
+
+		return false;
+
+	}
+
+
+	function exampleModel_store() {
+		localStorage.example = JSON.stringify(data.example);
+	}
+
+</script>
+
+
+		<!-- helpers -->
+		
+
+
+		<!-- views (including modules) -->
+		
+
+
+<!-- ==================== -->
+<!-- aboutView.html -->
+<!-- ==================== -->
+<template id="aboutView">
+	<div class="ui container">
+		<div class="ui raised fluid card">
+			<div class="content">
+				<div class="header">About</div>
+				<div class="description">
+					<p>Something about the app can go here.</p>
+				</div>
+			</div>
+			<div class="extra content">
+				<a class="ui primary button" v-on:click="goTo('/')">Back</a>
+			</div>
+		</div>
+	</div>
+</template>
+
+<style>
+</style>
+
+<script>
+	Vue.component('aboutView', {
+		template: aboutView
+	});
+</script>
+
+
+<!-- ==================== -->
+<!-- indexView.html -->
+<!-- ==================== -->
+<template id="indexView">
+	<div class="ui container">
+		<div class="ui raised fluid card">
+			<div class="content">
+				<div class="header">Hello World!</div>
+				<div class="description">
+					<p>This is an example mvc view app</p>
+				</div>
+			</div>
+			<div class="extra content">
+                                <a class="ui primary button" v-on:click="goTo('/about')">About</a>
+                        </div>
+		</div>
+	</div>
+</template>
+
+<style>
+</style>
+
+<script>
+	Vue.component('indexView', {
+		template: indexView
+	});
+</script>
+
+
+		<!-- controllers -->
+		
+
+
+<!-- ==================== -->
+<!-- aboutController.html -->
+<!-- ==================== -->
+<script>
+	const aboutController = {
+		template: '#aboutView',
+		data: function() {
+			return {
+			}
+		},
+		created: function() {
+		},
+		methods: {
+			goTo: function(route) {
+				router.push(route)
+			}
+		}
+	};
+</script>
+
+
+<!-- ==================== -->
+<!-- indexController.html -->
+<!-- ==================== -->
+<script>
+	const indexController = {
+		template: '#indexView',
+		data: function() {
+			return {
+			}
+		},
+		created: function() {
+		},
+		methods: {
+			goTo: function(route) {
+				router.push(route)
+                        }
+		}
+	};
+</script>
+
+
+		<!-- routes -->
+		
+
+
+<!-- ==================== -->
+<!-- web.html -->
+<!-- ==================== -->
+<script>
+	const router = new VueRouter({
+		routes: [
+			{
+				path: '/',
+				name: 'index',
+				component: indexController
+			},
+			{
+				path: '/about',
+				name: 'about',
+				component: aboutController
+			}
+		]
+	});
+</script>
+
+
+		<script>
+			// mount vue to the app container
+			const app = new Vue({
+				router
+			}).$mount('#app');
+		</script>
+	</body>
+</html>

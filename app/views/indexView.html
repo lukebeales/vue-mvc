@@ -1,0 +1,24 @@
+<template id="indexView">
+	<div class="ui container">
+		<div class="ui raised fluid card">
+			<div class="content">
+				<div class="header">Hello World!</div>
+				<div class="description">
+					<p>This is an example mvc view app</p>
+				</div>
+			</div>
+			<div class="extra content">
+                                <a class="ui primary button" v-on:click="goTo('/about')">About</a>
+                        </div>
+		</div>
+	</div>
+</template>
+
+<style>
+</style>
+
+<script>
+	Vue.component('indexView', {
+		template: indexView
+	});
+</script>

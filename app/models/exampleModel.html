@@ -1,0 +1,21 @@
+<script>
+
+	data.example = {};
+
+	function exampleModel_load() {
+
+		if ( typeof localStorage.example !== 'undefined' ) {
+			data.example = JSON.parse(localStorage.example);
+			return true;
+		}
+
+		return false;
+
+	}
+
+
+	function exampleModel_store() {
+		localStorage.example = JSON.stringify(data.example);
+	}
+
+</script>

@@ -1,0 +1,304 @@
+
+
+<!-- ==================== -->
+<!-- globals.html -->
+<!-- ==================== -->
+<script>
+
+	// this is the first thing to run, during the loading screen
+	function library_globals_init() {
+
+		// push to the loading screen incase someone hits refresh in their browser.
+		router.push('/');
+
+		// load data in
+		model_resource_load();
+
+		// if we have an id
+		if ( typeof data.resource.uuid !== 'undefined' ) {
+
+			// console.log("we have an id!!!");
+
+			// move on to fetching updated data
+			library_globals_update();
+
+		// otherwise no id found
+		} else {
+
+			// console.log("no id found");
+
+			// try registering
+			library_register();
+
+		}
+
+	}			
+
+
+	// this fetches a new copy of the resource data
+	// *** if the data gets too large, maybe do a compare like signchro does with an md5 of the data at both sides.
+	function library_globals_update() {
+
+		// this needs to send the resources uuid as a post var or header
+		axios.get("https://dashboard.resourcible.com/api/resource", {
+			headers: {
+				'X-Resource-UUID': data.resource.uuid
+			}
+		}).then(
+			(response) => {
+				if (
+					( typeof response.data.uuid !== 'undefined' ) &&
+					( response.data.uuid !== "" )
+				) {
+
+					// if a resource settings signature was sent along
+					// and it doesn't match what we have locally
+					// and the show is playing..
+					if (
+						( typeof response.data.revision !== 'undefined' ) &&
+						( typeof data.resource !== 'undefined' ) &&
+						( typeof data.resource.revision !== 'undefined' ) &&
+						( response.data.revision !== data.resource.revision )
+					) {
+
+						// restart the resource
+						library_globals_init();
+					}
+
+
+					data.resource = response.data;
+
+					// store the data
+					model_resource_store();
+
+					// check the data for a user_id.
+					// this will indicate that we have been paired
+					if (
+						( typeof data.resource.user_id !== 'undefined' ) &&
+						( data.resource.user_id !== "" ) &&
+						( data.resource.user_id !== null )
+					) {
+
+
+						// if we're on the loading or pair or instructions router, go to the resources screen.
+						if (
+							( router.currentRoute.path == '/' ) ||
+							( router.currentRoute.path == '/loading' ) ||
+							( router.currentRoute.name == 'loading' ) ||
+							( router.currentRoute.name == 'pair' )
+						) {
+							router.push('main');
+						}
+
+						setTimeout("library_globals_update();", 60000);
+
+					} else {
+
+						// there's no user_id, we need this resource to be paired.
+						// this will take over the display no matter what.
+						router.push('pair');
+
+						setTimeout("library_globals_update();", 5000);
+
+					}
+
+				// no response uuid was found, reset our data and re-register as this resource has probably been removed
+				} else {
+
+					library_register();
+
+				}
+
+			}
+
+		).catch( function() {
+
+			// run again in a bit
+			setTimeout("library_globals_update();", 60000);
+
+		});
+
+	}
+
+</script>
+
+
+<!-- ==================== -->
+<!-- register.html -->
+<!-- ==================== -->
+<script>
+
+	// this registers the resource on the webserver
+	function library_register() {
+
+		// empty our data out.
+		data.resource = {};
+		model_resource_store();
+
+		// start registration
+		axios.get("https://dashboard.resourcible.com/api/register", {
+			headers: {
+				'X-Resource-Type-UUID': data.register
+			}
+		}).then(
+			(response) => {
+				// response.data.value;
+
+				if (
+					( typeof response.data.uuid !== 'undefined' ) &&
+					( response.data.uuid !== "" )
+				) {
+
+					// console.log("registration successful!");
+
+					data.resource = response.data;
+
+					// store the data so we don't have to register again
+					model_resource_store();
+
+					// now because we have just registered we won't be paired.  jump to the pairing screen.
+					router.push('pair');
+
+					// start the data update timer in a few seconds
+					setTimeout("library_globals_update();", 5000);
+
+				} else {
+
+					// if the data is no good, retry in a few seconds...
+					setTimeout("library_register();", 5000);
+
+				}
+			}
+		);
+
+	}
+
+</script>
+
+
+<!-- ==================== -->
+<!-- resource.html -->
+<!-- ==================== -->
+<script>
+	function library_resource_appearance() {
+
+		// if we're an app.
+		if ( data.app ) {
+			// set a start background incase we don't have one
+			document.body.style.background = '#000000';
+		} else {
+			// this is so we can appear transparent within an iframe.
+			document.body.style.background = 'none';
+		}
+
+		if (
+			( typeof data.resource.appearance !== 'undefined' ) &&
+			( data.resource.appearance !== null )
+		) {
+
+			// find out if we have a background colour chosen...
+			if (
+				( typeof data.resource.appearance.background_colour !== 'undefined' ) &&
+				( data.resource.appearance.background_colour != '' )
+			) {
+				document.body.style.backgroundColor = data.resource.appearance.background_colour;
+			}
+
+			if (
+				( typeof data.resource.appearance.background_image !== 'undefined' ) &&
+				( data.resource.appearance.background_image != '' )
+			) {
+				document.body.style.backgroundSize = "cover";
+				document.body.style.backgroundPosition = "50% 50%";
+				document.body.style.backgroundRepeat = "no-repeat";
+				document.body.style.backgroundAttachment = "fixed";
+				document.body.style.backgroundImage = "url('https://dashboard.resourcible.com/resources/media/" + data.resource.uuid + "/appearance/background_image/')";
+			}
+		}
+
+	}
+</script>
+
+
+<!-- ==================== -->
+<!-- style.html -->
+<!-- ==================== -->
+<script>
+
+	// a lot of the apps/resources use the common style names, so this is a nice easy function for them to call when they need a style made.
+
+	// class = what to call the style class
+	// settings = the settings we need to look through
+	// prefix = the prefix for the settings that we're looking for
+	function library_style_generate(className, settings, prefix) {
+
+		let style = '';
+		let font = '';
+
+		style += '<style>';
+			style += '' + className + ' {';
+				if (
+					( typeof settings[prefix + "_colour"] !== 'undefined' ) &&
+					( settings[prefix + "_colour"] !== null ) &&
+					( settings[prefix + "_colour"] !== '' )
+				) {
+					style += 'color: ' + settings[prefix + "_colour"] + ';';
+				}
+				if (
+					( typeof settings[prefix + "_background_colour"] !== 'undefined' ) &&
+					( settings[prefix + "_background_colour"] !== null ) &&
+					( settings[prefix + "_background_colour"] !== '' )
+				) {
+					style += 'background-color: ' + settings[prefix + "_background_colour"] + ';';
+				}
+				if (
+					( typeof settings[prefix + "_size"] !== 'undefined' ) &&
+					( settings[prefix + "_size"] !== null ) &&
+					( settings[prefix + "_size"] !== '' )
+				) {
+					style += 'font-size: ' + settings[prefix + "_size"] + 'vmin;';
+				}
+				if (
+					( typeof settings[prefix + "_style"] !== 'undefined' ) &&
+					( settings[prefix + "_style"] !== null ) &&
+					( settings[prefix + "_style"] !== '' )
+				) {
+					style += 'font-style: ' + settings[prefix + "_style"] + ';';
+				}
+				if (
+					( typeof settings[prefix + "_shadow"] !== 'undefined' ) &&
+					( settings[prefix + "_shadow"] !== null ) &&
+					( settings[prefix + "_shadow"] !== '' )
+				) {
+					style += 'text-shadow: ';
+					if ( settings[prefix + "_shadow"] == 'light' ) {
+						style += '0em 0em 0.25em rgba(255, 255, 255, 1)';
+					} else {
+						style += '0em 0.1em 0.1em rgba(0, 0, 0, 0.3)';
+					}
+					style += ';';
+				}
+				if (
+					( typeof settings[prefix + "_outline"] !== 'undefined' ) &&
+					( settings[prefix + "_outline"] !== null ) &&
+					( settings[prefix + "_outline"] !== '' )
+				) {
+					style += '-webkit-text-stroke: ';
+					style += '0.01em ' + settings[prefix + "_outline"];
+					style += ';';
+				}
+				if (
+					( typeof settings[prefix + "_font"] !== 'undefined' ) &&
+					( settings[prefix + "_font"] !== null ) &&
+					( settings[prefix + "_font"] !== '' )
+				) {
+					style += 'font-family: ' + settings[prefix + "_font"] + ';';
+					font += '<link href="https://fonts.googleapis.com/css?family=' + settings[prefix + "_font"] + '" rel="stylesheet" />';
+				}
+			style += "}";
+		style += '</style>';
+
+		return style + '' + font;
+	}
+</script>
+

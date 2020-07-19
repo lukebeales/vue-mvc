@@ -1,0 +1,24 @@
+<template id="aboutView">
+	<div class="ui container">
+		<div class="ui raised fluid card">
+			<div class="content">
+				<div class="header">About</div>
+				<div class="description">
+					<p>Something about the app can go here.</p>
+				</div>
+			</div>
+			<div class="extra content">
+				<a class="ui primary button" v-on:click="goTo('/')">Back</a>
+			</div>
+		</div>
+	</div>
+</template>
+
+<style>
+</style>
+
+<script>
+	Vue.component('aboutView', {
+		template: aboutView
+	});
+</script>
